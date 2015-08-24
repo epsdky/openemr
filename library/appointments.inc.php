@@ -237,7 +237,7 @@ function fetchEvents( $from_date, $to_date, $where_param = null, $orderby_param 
 
   }    
   return $events2;
-////////////////////// End of code insertion - ....
+////////////////////// End of code inserted by epsdky
 }
 //////////////////////
 
