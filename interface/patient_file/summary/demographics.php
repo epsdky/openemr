@@ -1331,8 +1331,8 @@ expand_collapse_widget($widgetTitle, $widgetLabel, $widgetButtonLabel,
         // 
         $current_date2 = date('Y-m-d');
         $events = array();
-        $events = fetchAppointments($current_date2, null, $pid, null, null, null, null, null, null, true); //////
-        $events = sortAppointments($events);   // need this?
+        $events = fetchAppointments($current_date2, null, $pid, null, null, null, null, null, null, null, true); //////
+        $events = sortAppointments($events);
         //////
 
      if ( (acl_check('patients', 'med')) && ($GLOBALS['enable_cdr'] && $GLOBALS['enable_cdr_crw']) ) {
@@ -1360,7 +1360,7 @@ expand_collapse_widget($widgetTitle, $widgetLabel, $widgetButtonLabel,
         $widgetButtonClass = "";
         $linkMethod = "javascript";
         $bodyClass = "summary_item small";
-        $widgetAuth = $resNotNull; //////
+        $widgetAuth = $resNotNull; // $resNotNull refects state of query (appts) in fetchAppointments()
         $fixedWidth = false;
         expand_collapse_widget($widgetTitle, $widgetLabel, $widgetButtonLabel , $widgetButtonLink, $widgetButtonClass, $linkMethod, $bodyClass, $widgetAuth, $fixedWidth);
         $count = 0;
