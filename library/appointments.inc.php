@@ -49,7 +49,7 @@ function fetchEvents( $from_date, $to_date, $where_param = null, $orderby_param 
   if($flagPSM) { // Patient Summary Mode
 
     $where =
-      "((e.pc_endDate >= CURRENT_DATE AND e.pc_recurrtype > 0) OR " .
+      "((e.pc_endDate >= CURRENT_DATE AND e.pc_recurrtype > '0') OR " .
       "(e.pc_eventDate >= CURRENT_DATE))";
 
   } else {
@@ -177,11 +177,29 @@ function fetchEvents( $from_date, $to_date, $where_param = null, $orderby_param 
         $exdate = $event_recurrspec['exdate'];
 
         list($ny,$nm,$nd) = explode('-',$event['pc_eventDate']);
-        $occurance = $event['pc_eventDate'];
 
-        while($occurance <= $stopDate) {
-    
-          if($occurance >= $from_date) {
+        $occuranceYm = "$ny-$nm"; // YYYY-mm
+        $from_dateYm = substr($from_date,0,7); // YYYY-mm
+        $stopDateYm = substr($stopDate,0,7); // YYYY-mm
+
+        // $nd will sometimes be 29, 30 or 31, and if used in mktime below, a problem
+        // with overflow will occur ('01' should be plugged in to avoid this). We need
+        // to mirror the calendar code which has this problem, so $nd has been used.
+        while($occuranceYm < $from_dateYm) {
+          $occuranceYmX = date('Y-m-d',mktime(0,0,0,$nm+$rfreq,$nd,$ny));
+          list($ny,$nm,$nd) = explode('-',$occuranceYmX);
+          $occuranceYm = "$ny-$nm";
+        }
+
+        while($occuranceYm <= $stopDateYm) {
+ 
+          // (YYYY-mm)-dd
+          $dnum = $rnum;
+          do {
+            $occurance = Date_Calc::NWeekdayOfMonth($dnum--,$rday,$nm,$ny,$format="%Y-%m-%d");
+          } while($occurance === -1);
+
+          if($occurance >= $from_date && $occurance <= $stopDate) {
         
             $excluded = false;
             if (isset($exdate)) {
@@ -195,28 +213,21 @@ function fetchEvents( $from_date, $to_date, $where_param = null, $orderby_param 
             }
 
             if ($excluded == false) {
+
               $event['pc_eventDate'] = $occurance;
               $event['pc_endDate'] = '0000-00-00';
               $events2[] = $event;
               //////
               if($flagPSM) break;
               //////
+
             }
 
           }     
-          // YYYY-mm
-          //
-          // $nd will sometimes be 29, 30 or 31, and if used in mktime a problem with
-          // overflow will occur, therefore '01' should be plugged in instead, but to
-          // mirror the calendar code, $nd has been used.
-          $occuranceYm = date('Y-m-d',mktime(0,0,0,$nm+$rfreq,$nd,$ny));
-          list($ny,$nm,$nd) = explode('-',$occuranceYm);
 
-          // (YYYY-mm)-dd
-          $dnum = $rnum;
-          do {
-              $occurance = Date_Calc::NWeekdayOfMonth($dnum--,$rday,$nm,$ny,$format="%Y-%m-%d");
-          } while($occurance === -1);
+          $occuranceYmX = date('Y-m-d',mktime(0,0,0,$nm+$rfreq,$nd,$ny));
+          list($ny,$nm,$nd) = explode('-',$occuranceYmX);
+          $occuranceYm = "$ny-$nm";
 
         }
 
@@ -226,7 +237,7 @@ function fetchEvents( $from_date, $to_date, $where_param = null, $orderby_param 
 
   }    
   return $events2;
-////////////////////// End of code inserted by epsdky
+////////////////////// End of code insertion - ....
 }
 //////////////////////
 
