@@ -43,10 +43,10 @@ $ORDERHASH = array(
     'trackerstatus' => array( 'trackerstatus', 'date', 'time', 'patient' ),    
 );
 
-function fetchEvents( $from_date, $to_date, $where_param = null, $orderby_param = null, $tracker_board = false, $flagPSM = false ) 
+function fetchEvents( $from_date, $to_date, $where_param = null, $orderby_param = null, $tracker_board = false, $flagPSM = false, $flagF = false ) 
 {
   //////
-  if($flagPSM) { // Patient Summary Mode
+  if($flagPSM || $flagF) { // Patient Summary Mode
 
     $where =
       "((e.pc_endDate >= '$from_date' AND e.pc_recurrtype > '0') OR " .
@@ -109,7 +109,7 @@ function fetchEvents( $from_date, $to_date, $where_param = null, $orderby_param 
 
   while ($event = sqlFetchArray($res)) {
     ///////
-    if($flagPSM) $stopDate = $event['pc_endDate'];
+    if($flagPSM || $flagF) $stopDate = $event['pc_endDate'];
     else $stopDate = ($event['pc_endDate'] <= $to_date) ? $event['pc_endDate'] : $to_date;
     ///////
     switch($event['pc_recurrtype']) {
@@ -258,7 +258,7 @@ function fetchAllEvents( $from_date, $to_date, $provider_id = null, $facility_id
 	return $appointments;
 }
 
-function fetchAppointments( $from_date, $to_date, $patient_id = null, $provider_id = null, $facility_id = null, $pc_appstatus = null, $with_out_provider = null, $with_out_facility = null, $pc_catid = null, $tracker_board = false, $flagPSM = false )
+function fetchAppointments( $from_date, $to_date, $patient_id = null, $provider_id = null, $facility_id = null, $pc_appstatus = null, $with_out_provider = null, $with_out_facility = null, $pc_catid = null, $tracker_board = false, $flagPSM = false, $flagF = false )
 {
 	$where = "";
 	if ( $provider_id ) $where .= " AND e.pc_aid = '$provider_id'";
@@ -303,8 +303,30 @@ function fetchAppointments( $from_date, $to_date, $patient_id = null, $provider_
 	}
 	$where .= $filter_wofacility;
 	
-	$appointments = fetchEvents( $from_date, $to_date, $where, '', $tracker_board, $flagPSM );
+	$appointments = fetchEvents( $from_date, $to_date, $where, '', $tracker_board, $flagPSM, $flagF );
 	return $appointments;
+}
+
+function fetchNextXAppts($from_date, $patient_id = null, $X = '1')
+{
+  $nextXAppts = array();
+ 
+  $appts = fetchAppointments( $from_date, null, $patient_id, null, null, null, null, null, null, false, false, true );
+
+  if ($appts) { 
+  
+    $appts = sortAppointments($appts);
+    $i = 1;    
+    foreach($appts as $appt) {
+      $nextXAppts[] = $appt;
+      if($i == $X) break;
+      ++$i;
+    }
+    
+    return $nextXAppts;
+    
+  } 
+
 }
 
 // get the event slot size in seconds
