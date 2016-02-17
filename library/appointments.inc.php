@@ -158,7 +158,7 @@ function fetchEvents( $from_date, $to_date, $where_param = null, $orderby_param 
               //////
               if ($nextX) {
               	++$incX
-              	if($incX > $nextX) break;
+              	if($incX == $nextX) break;
               }
               //////
             }
@@ -224,7 +224,7 @@ function fetchEvents( $from_date, $to_date, $where_param = null, $orderby_param 
               //////
               if($nextX) {
               	++$incX;
-              	if($incX > $nextX) break;
+              	if($incX == $nextX) break;
               }
               //////
 
